@@ -1,1 +1,28 @@
-data/
+# Existing
+/.pytest_cache/
+/__pycache__/
+.ipynb_checkpoints/
+*.pyc
+*.pyo
+*.pyd
+*.db
+
+docs/Data Mining Project
+tests
+
+# Data 
+data/transfermarkt/raw/*.csv
+data/transfermarkt/logs/
+
+# Environment
+.env
+*.env
+miniforge/
+conda-meta/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
