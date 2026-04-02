@@ -20,6 +20,12 @@ INJURY_TYPE_MAP = {
     "pulled muscle": "Muscular",
     "back problems": "Muscular",
     "back injury": "Muscular",
+    "torn muscle bundle": "Muscular",
+    "strain": "Muscular",
+    "lumbago": "Muscular",
+    "hip problems": "Muscular",
+    "hip injury": "Muscular",
+    "pubalgia": "Muscular",
 
     # Ligamentous
     "cruciate": "Ligamentous_Severe",
@@ -27,6 +33,11 @@ INJURY_TYPE_MAP = {
     "knee ligament": "Ligamentous_Severe",
     "meniscus": "Ligamentous_Severe",
 
+
+    # Ligamentous_Mild
+    "sprain": "Ligamentous_Mild",
+    "leg injury": "Ligamentous_Mild",
+    "foot bruise": "Ligamentous_Mild",
     "ankle sprain": "Ligamentous_Mild",
     "ankle injury": "Ligamentous_Mild",
     "ankle problems": "Ligamentous_Mild",
@@ -37,11 +48,20 @@ INJURY_TYPE_MAP = {
     "foot injury": "Ligamentous_Mild",
     "ligament": "Ligamentous_Mild",
 
+    # Trauma 
+    "bruise": "Trauma",
+    "head injury": "Trauma",
+    "concussion": "Trauma",
+
     # Bone
     "fracture": "Bone",
     "broken": "Bone",
     "stress fracture": "Bone",
     "bone injury": "Bone",
+    "knee surgery": "Bone",
+    "surgery": "Bone",
+    "shin injury": "Bone",
+    "toe injury": "Bone",
 
     # Tendon
     "tendon": "Tendon",
@@ -58,6 +78,8 @@ INJURY_TYPE_MAP = {
     "flu": "Illness",
     "quarantine": "Illness",
     "fever": "Illness",
+    "cold": "Illness",
+    "inflammation": "Illness",
 
     # Other — explicito
     "knock": "Other",
@@ -65,6 +87,10 @@ INJURY_TYPE_MAP = {
     "minor knock": "Other",
     "unknown": "Other",
 }
+
+
+import pandas as pd
+import numpy as np
 
 
 def normalize_injury_type(raw: str) -> str:
@@ -84,3 +110,39 @@ def normalize_injury_type(raw: str) -> str:
             return category
     
     return "Other"
+
+
+def get_clean_df (players_csv_path, injuries_csv_path):
+
+    
+    df_players = pd.read_csv(players_csv_path, parse_dates=['dob'])
+    df_injuries = pd.read_csv(injuries_csv_path, parse_dates=['injury_date'])
+
+    df_players = df_players.drop_duplicates(subset=['player_id_tm'], keep='first')
+    df_injuries = df_injuries.drop_duplicates()
+
+    df_raw = pd.merge(df_injuries, df_players, how='left', on='player_id_tm')
+
+    df_scope = df_raw.copy()
+    df_scope['age_at_injury'] = np.floor((df_scope['injury_date'] - df_scope['dob']).dt.days / 365.25).astype('Int64')
+    df_scope = df_scope[df_scope['age_at_injury'].between(14, 24)]
+
+    df_scope = df_scope[df_scope['injury_date'] >= '2019-08-01']
+
+
+    df_preclean = df_scope.copy()
+    df_preclean['injury_type'] = df_preclean['injury_type_raw'].apply(normalize_injury_type)
+
+    IRREDUCIBLE = ['unknown injury', 'fitness', 'knock', 'minor knock', 'rest']
+    df_clean = df_preclean[~df_preclean['injury_type_raw'].str.lower().isin(IRREDUCIBLE)].copy()
+
+    df_clean['days_absent'] = df_clean.groupby('injury_type')['days_absent'].transform(
+        lambda x: x.fillna(x.median())
+    )
+
+    print(f"Pre-clean records: {len(df_preclean)}")
+    print(f"Cleaned records: {len(df_clean)}")
+    assert len(df_clean) == 4401, f"Pipeline failure: Expected 4401 records, but got {len(df_clean)}."
+    assert df_clean['days_absent'].isna().sum() == 0, "Pipeline failure: Nulls remain in days_absent."
+
+    return df_clean

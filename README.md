@@ -61,7 +61,7 @@ The dataset was restructured to rely exclusively on Transfermarkt for injury his
 │   └── M2 - Alexander San Agustin.ipynb     # Main analysis notebook
 ├── src/
 |   ├── analysis/
-|   |   └── tm_test_analysis.py
+|   |   └── tm_test_analysis.pys
 │   ├── scrapping/
 │   │   └── transfermarktScrapper.py
     |   └── tm_debug.py
