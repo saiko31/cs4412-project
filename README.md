@@ -105,6 +105,25 @@ jupyter notebook notebooks/M2_EDA_Clustering.ipynb
   median absence of 204 days — 10x higher than Muscular injuries (22 days)
 - **Cluster 1** isolates 191 ACL/cruciate cases as a distinct high-severity profile
 
+
+## Phase M3: Complete Implementation & Pattern Discovery
+
+Building upon the initial K-Means clustering, the analytical scope was expanded to include **Association Rule Mining** via the Apriori algorithm. The objective was to answer the core discovery questions by identifying specific combinations of player characteristics that lead to particular injury types.
+
+**Key Technical Refinements:**
+* **Scope Adjustment & Bias Removal:** Initial algorithm runs revealed clinical tautologies (e.g., common illnesses predictably leading to minor absences). The transactional dataset was systematically refined to exclude 'Illness' and 'Severity' categories, forcing the model to mine strictly for pure, biomechanical risk factors.
+* **Analytical Pivot:** To address the scarcity of open-source granular workload metrics, player **Position** was utilized as a reliable proxy for physical strain and positional fatigue.
+
+**Major Clinical Findings (Apriori):**
+* **The Attacker's Risk Window:** A strong association (Lift: 1.40) was discovered linking Forwards aged 19-21 to *Severe Ligamentous* injuries, highlighting the extreme biomechanical stress (sprints, sudden stops) of the position during the transition to elite professional football.
+* **Developmental Bone Stress:** Midfielders aged 19-21 and players under 18 showed significant associations with *Bone* injuries. Given that midfielders cover the highest distances, this suggests a critical link between high professional workloads and late-stage skeletal maturation.
+* **Goalkeeper Isolation:** Goalkeepers exhibited the highest association metric in the dataset (Lift: 2.28) with categorically distinct injuries (*Other*), confirming their entirely unique physical and tactical demands compared to outfield players.
+
+**Other work completed on this phase:**
+- Restructuring of the M2 notebook to incorporate the feedback provided and resolve data consistency issues. Spelling corrections were also made.
+- Addition of new injury features to tm_preprocessing.py to improve classification accuracy, including a new `trauma` category.
+- Modularization of the preprocessing pipeline to facilitate implementation in M3
+
 ---
 
 ## Milestones
@@ -112,5 +131,5 @@ jupyter notebook notebooks/M2_EDA_Clustering.ipynb
 |---|---|
 | M1: Proposal | Complete |
 | M2: EDA + Initial Mining | Complete |
-| M3: Association Rules + Extended Mining | Planned |
+| M3: Association Rules + Extended Mining | Complete |
 | M4: Final Report | Planned |
