@@ -1,135 +1,154 @@
 # Injury Pattern Discovery in U-25 Professional Footballers
-
 ## Author
-**Alexander San Agustin Melendez**
+**Alexander San Agustin Melendez** | CS 4412 — Data Mining | Kennesaw State University
+
+---
 
 ## Overview
-This project seeks to apply data mining techniques to discover hidden patterns in injury records of professional soccer players under 25 years old across the Big 5 European Leagues:
+This project applies Knowledge Discovery in Databases (KDD) methodology to uncover
+hidden patterns in injury records of professional footballers under 25 years old
+across the Big 5 European leagues (2019/20–2023/24). Using clustering and association
+rule mining, the study characterizes injury risk profiles and identifies non-obvious
+relationships between player attributes and injury outcomes.
 
+### Leagues Covered
 - La Liga (Spain)
 - Premier League (England)
 - Serie A (Italy)
 - Ligue 1 (France)
 - Bundesliga (Germany)
 
- The data was taken from the 2019/20 to 2023/24 seasons.
-
- Using clustering and association rules, the study seeks to characterize injury risk profiles and indentify non-obvious relatinships between plater attributes and injury outcomes.
-
- ### Discovery Questions
-1. Which combination of factors represents a significant elevation in injury occurrence among U-25 players?
+### Discovery Questions
+1. Which combination of factors represents a significant elevation in injury occurrence
+   among U-25 players?
 2. Are there natural risk profiles that segment U-25 players by injury pattern?
 
-##  Data Sources
-* **Transfermarkt (Scraped):** Used for player demographics, market value context, and historical injury records. 
+---
 
-**NOTE:** The original proposal planned to integrate **StatsBomb Open Data** for workload metrics. During M2, it was 
-determined that StatsBomb's event-level data requires authentication and is not publicly available for the Big 5 leagues at the required coverage.
+## Data Source
 
-The dataset was restructured to rely exclusively on Transfermarkt for injury history, player demographics, and positional data. Workload metrics remain a planned extension for M3 via an alternative data source.
+**Transfermarkt (web scraping):** Player demographics and historical injury records.
 
-## Dataset (M2)
+> **Note:** The original proposal planned to integrate StatsBomb Open Data for
+> event-level workload metrics. During M2, it was determined that StatsBomb's
+> event data requires authentication and is not publicly available for the Big 5
+> leagues at the required coverage. FBref was evaluated as an alternative but
+> returned HTTP 403 errors for automated access. The dataset was restructured to
+> rely exclusively on Transfermarkt. Player position is used as a proxy for
+> physical workload.
+
+---
+
+## Dataset
+
 | Parameter | Value |
 |---|---|
 | Source | Transfermarkt (web scraping) |
 | Scope | Big 5 leagues, seasons 2019/20 — 2023/24 |
-| Players scraped | 3,273 unique U-25 players |
+| Unique U-25 players | 3,273 |
 | Raw injury records | 22,612 |
-| Final dataset (post-preprocessing) | 4,917 records |
-| Age range | 15 — 24 at time of injury |
-| Injury categories | 7 (normalized from 299 raw types) |
+| Final dataset (M3 pipeline) | 4,401 records |
+| Age range at injury | 15 — 24 |
+| Injury categories (normalized) | 8 (from 299 raw types) |
+
+> **Raw data files are excluded from the repository (.gitignore).**
+> Run the scraper to regenerate them (see How to Run).
 
 ---
 
+## Key Findings
+
+**Severity asymmetry:**
+Ligamentous_Severe injuries (ACL, cruciate) represent 4.8% of records but produce
+a median absence of 204 days — 10× higher than Muscular injuries (22 days).
+
+**Developmental risk windows (Apriori, Lift > 1.2):**
+- Goalkeepers → categorically distinct injuries (Lift: 2.286)
+- Players under 18 → elevated bone injury risk (Lift: 1.415)
+- Attackers aged 19–21 → elevated ACL/cruciate risk (Lift: 1.401)
+- Midfielders aged 19–21 → elevated bone stress risk (Lift: 1.331)
+
+**Cluster isolation (K-Means, k=4):**
+One clinically distinct cluster of 197 players defined by Ligamentous_Severe
+injuries with median absence of 208 days was isolated from 4,401 records.
+
+---
 
 ## Tech Stack
-* **Language:** Python
-* **Libraries:** Pandas, NumPy, Scikit-learn, BeautifulSoup/Scrapy (for Transfermarkt)
-* **Documentation:** LaTeX (for technical reporting)
+
+- **Language:** Python 3.10
+- **Environment:** Miniforge (conda) on Fedora Linux
+- **Libraries:** Pandas, NumPy, Scikit-learn, Matplotlib, Seaborn,
+  BeautifulSoup, Requests, TheFuzz, mlxtend
+- **Tools:** Jupyter Notebook, VS Code
 
 ---
 
-
 ## Repository Structure
+
 ```text
 ├── data/
 │   └── transfermarkt/
 │       └── raw/
-│           ├── players_raw.csv      # 3,273 unique U-25 players
-│           └── injuries_raw.csv     # 22,612 raw injury records
+│           ├── players_raw.csv       # 3,273 unique U-25 players
+│           └── injuries_raw.csv      # 22,612 raw injury records
 ├── notebooks/
-│   └── M2 - Alexander San Agustin.ipynb     # Main analysis notebook
+│   ├── M2 - Alexander San Agustin.ipynb   # EDA + K-Means
+│   └── M3 - Alexander San Agustin.ipynb   # Apriori + Decision Tree
 ├── src/
-|   ├── analysis/
-|   |   └── tm_test_analysis.pys
 │   ├── scrapping/
-│   │   └── transfermarktScrapper.py
-    |   └── tm_debug.py
-│   └── preprocesing/
-│       └── tm_preprocessing.py     # INJURY_TYPE_MAP + normalize_injury_type()
+│   │   ├── transfermarktScrapper.py
+│   │   └── tm_debug.py
+│   ├── preprocesing/
+│   │   └── tm_preprocessing.py      # INJURY_TYPE_MAP + normalize_injury_type()
+│   └── analysis/
+│       └── tm_test_analysis.py
+├── outputs/                          # Generated visualizations
 ├── docs/
-|   └── CS_4412_M1__Project_Proposal___Alexander_San_Agustin_Melendez.pdf
-│   └── M2_Summary.pdf              # 1-2 page summary
+│   ├── CS_4412_M1__Project_Proposal___Alexander_San_Agustin_Melendez.pdf
+│   ├── M2_Summary.pdf
+│   ├── M3_Summary___Alexander_San_Agustin_Melendez.pdf
+│   └── M4_Final_Report_Alexander_San_Agustin.pdf
 └── README.md
 ```
 
+---
 
 ## How to Run
 
 ### 1. Setup environment
 ```bash
+conda env create -f enviroment.yml
 conda activate cs4412_dm
-pip install pandas numpy scikit-learn matplotlib seaborn beautifulsoup4 requests thefuzz
 ```
 
 ### 2. Run the scraper
 ```bash
-# Test mode (La Liga, 1 season)
+# Test mode — La Liga, 1 season (~30 min)
 python src/scrapping/transfermarktScrapper.py --test
 
-# Full run (~10-12 hours)
+# Full run — Big 5 leagues, 5 seasons (~10-12 hours)
 python src/scrapping/transfermarktScrapper.py
 ```
 
-### 3. Run the notebook
+### 3. Run the notebooks
 ```bash
-jupyter notebook notebooks/M2_EDA_Clustering.ipynb
+# M2: EDA + K-Means clustering
+jupyter notebook notebooks/M2\ -\ Alexander\ San\ Agustin.ipynb
+
+# M3: Apriori + Decision Tree
+jupyter notebook notebooks/M3\ -\ Alexander\ San\ Agustin.ipynb
 ```
 
----
-
-## M2 Results Summary
-- **4,917 injury records** after preprocessing (scope: 2019-2024, age < 25)
-- **4 clusters** identified via K-Means (silhouette = 0.25 at k=4)
-- **Key finding:** Ligamentous_Severe injuries (4% of records) produce 
-  median absence of 204 days — 10x higher than Muscular injuries (22 days)
-- **Cluster 1** isolates 191 ACL/cruciate cases as a distinct high-severity profile
-
-
-## Phase M3: Complete Implementation & Pattern Discovery
-
-Building upon the initial K-Means clustering, the analytical scope was expanded to include **Association Rule Mining** via the Apriori algorithm. The objective was to answer the core discovery questions by identifying specific combinations of player characteristics that lead to particular injury types.
-
-**Key Technical Refinements:**
-* **Scope Adjustment & Bias Removal:** Initial algorithm runs revealed clinical tautologies (e.g., common illnesses predictably leading to minor absences). The transactional dataset was systematically refined to exclude 'Illness' and 'Severity' categories, forcing the model to mine strictly for pure, biomechanical risk factors.
-* **Analytical Pivot:** To address the scarcity of open-source granular workload metrics, player **Position** was utilized as a reliable proxy for physical strain and positional fatigue.
-
-**Major Clinical Findings (Apriori):**
-* **The Attacker's Risk Window:** A strong association (Lift: 1.40) was discovered linking Forwards aged 19-21 to *Severe Ligamentous* injuries, highlighting the extreme biomechanical stress (sprints, sudden stops) of the position during the transition to elite professional football.
-* **Developmental Bone Stress:** Midfielders aged 19-21 and players under 18 showed significant associations with *Bone* injuries. Given that midfielders cover the highest distances, this suggests a critical link between high professional workloads and late-stage skeletal maturation.
-* **Goalkeeper Isolation:** Goalkeepers exhibited the highest association metric in the dataset (Lift: 2.28) with categorically distinct injuries (*Other*), confirming their entirely unique physical and tactical demands compared to outfield players.
-
-**Other work completed on this phase:**
-- Restructuring of the M2 notebook to incorporate the feedback provided and resolve data consistency issues. Spelling corrections were also made.
-- Addition of new injury features to tm_preprocessing.py to improve classification accuracy, including a new `trauma` category.
-- Modularization of the preprocessing pipeline to facilitate implementation in M3
+Run all cells in order: **Kernel > Restart & Run All**
 
 ---
 
 ## Milestones
-| Milestone | Status |
-|---|---|
-| M1: Proposal | Complete |
-| M2: EDA + Initial Mining | Complete |
-| M3: Association Rules + Extended Mining | Complete |
-| M4: Final Report | Planned |
+
+| Milestone | Key Deliverable | Status |
+|---|---|---|
+| M1: Proposal | Discovery questions, toolstack, data source identification | ✅ Complete |
+| M2: EDA + Initial Mining | K-Means clustering, preprocessing pipeline | ✅ Complete |
+| M3: Complete Implementation | Apriori association rules, Decision Tree validation | ✅ Complete |
+| M4: Final Report | Critical assessment, portfolio-ready documentation | ✅ Complete |
